@@ -29,6 +29,10 @@ Window{
     anchors.fill: root.contentItem;
   }
 
+  SearchEngineHelper{
+  id: urlHelper;
+  }
+
   // BasicRectangle{
   // // anchors.fill: parent;
   //   width: 100; height: this.width;
@@ -136,9 +140,9 @@ Window{
         if(request.userInitiated === false){
           return;
         }else if( request.destination === WebEngineNewWindowRequest.InNewTab ){ webBox.createObject( {url : request.requestedUrl},  ); }
-        else if( request.destination === WebEngineNewWindowRequest.InNewBackgroundTab ){webBox.createTab(request.requestedUrl, false ); }
+        // else if( request.destination === WebEngineNewWindowRequest.InNewBackgroundTab ){webBox.createTab(request.requestedUrl, false ); }
       }
-      function onCloseRequested() { root.deleteTab(); }
+      // function onCloseRequested() { root.deleteTab(); }
 
       // UI-related functions here:
       function onUrlChanged(){console.log("URL CHANGED!");searchBar.text = webBox.readPropertyCache("url", "NULL").toString(); }
@@ -161,7 +165,7 @@ Window{
     Component.onCompleted:{
       // webBox.setup();
       webBox.registerComponent("WebTab.qml", "webtab");
-      webBox.createObject( "webtab", true, {url: urlHelper.getEngineURL( )} );
+      webBox.createObject( "webtab", true, {url: urlHelper.getURL("")} );
       // console.log("registered!");
       // console.log(webBox.currentTab);
       // searchBar.text = webBox.getPropertyByName(currentIndex, "url")
@@ -395,7 +399,7 @@ Window{
     onActivated: {tabSwitcherLDR.active ^=1}}
   Shortcut{
     sequence: "Ctrl+T";
-    onActivated: { webBox.createObject("webtab", true, {url: urlHelper.getEngineURL( )});}}
+    onActivated: { webBox.createObject("webtab", true, {url: urlHelper.getURL("")});}}
   Shortcut{
     sequence: "Ctrl+W";
     onActivated: {webBox.deleteTab(webBox.currentIndex);}}

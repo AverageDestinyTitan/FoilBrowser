@@ -124,22 +124,20 @@ int main(int argc, char *argv[])
 
     qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
 
-    Q_Searcher searchHelper;
-    searchHelper.setSearchEngine( Q_Searcher::DuckDuckGo );
+    // Q_Searcher searchHelper;
+    // searchHelper.setSearchEngine( Q_Searcher::DuckDuckGo );
 
     QQmlApplicationEngine engine;
-    engine.rootContext() ->setContextProperty( "urlHelper", &searchHelper ); // try to stop depending on this  ASAP!
+    // engine.rootContext() ->setContextProperty( "urlHelper", &searchHelper ); // try to stop depending on this  ASAP!
     engine.loadFromModule( "App.Core", "Main" );
     if( engine.rootObjects().isEmpty() )return 1;
     // QObject* webBoxOBJ = engine.rootObjects().constFirst() ->findChild<QObject*>("_WebBox");
 
 
     // if(webBoxOBJ != nullptr){
-    //     QObject::connect(QQuickWebEngineProfile::defaultProfile(), &QQuickWebEngineProfile::downloadRequested, [&](QQuickWebEngineDownloadRequest * download){
-    //         qDebug() <<"caught!";
-    //         QMetaObject::invokeMethod(webBoxOBJ, "handleDownload",
-    //                                   Q_ARG(QQuickWebEngineDownloadRequest, *download));
-    //     });
+        QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](){
+            qDebug() <<"caught download!";
+        });
     // }
 
     // QWindow* wnd = new QWindow;

@@ -11,25 +11,25 @@
 #include <QRegularExpression>
 #include <Windows.h>
 
-class Q_TYPEHELPERS : public QObject{
-    Q_OBJECT
-    QML_ELEMENT
-    QML_SINGLETON
+// class Q_TYPEHELPERS : public QObject{
+//     Q_OBJECT
+//     QML_ELEMENT
+//     QML_SINGLETON
 
-public:
+// public:
 
-    template<size_t N>
-    QString fromTChar(const TCHAR (&data)[N]){
-        return QString::fromWCharArray(data);
-    }
+//     template<size_t N>
+//     QString fromTChar(const TCHAR (&data)[N]){
+//         return QString::fromWCharArray(data);
+//     }
 
-    TCHAR toTChar(const QString &data){
-        TCHAR *charData = new TCHAR[data.length()];
-        data.toWCharArray(charData);
-        return *charData;
-    }
+//     TCHAR toTChar(const QString &data){
+//         TCHAR *charData = new TCHAR[data.length()];
+//         data.toWCharArray(charData);
+//         return *charData;
+//     }
 
-};
+// };
 
 class Q_INIConfig : public QObject{
     Q_OBJECT
@@ -73,10 +73,12 @@ private:
 
 class Q_Searcher : public QObject{
     Q_OBJECT
+    QML_ELEMENT
     QML_NAMED_ELEMENT(SearchEngineHelper)
-    QML_SINGLETON
-    Q_PROPERTY(SearchEngine searchEngine READ searchEngine WRITE setSearchEngine NOTIFY searchEngineChanged FINAL)
+    // QML_SINGLETON
+    Q_PROPERTY(qint64 searchEngine READ searchEngine WRITE setSearchEngine NOTIFY searchEngineChanged FINAL)
 public:
+
     enum DefaultSearchEngines{ // kept merely for convenience purposes.
         Google=0,
         DuckDuckGo=1,
@@ -92,12 +94,13 @@ public:
 
     Q_INVOKABLE qint64 searchEngine() const {return m_searchProvider;}
 
-    Q_INVOKABLE void setSearchEngine(const qint64 newEngine) {
+    Q_INVOKABLE void setSearchEngine(qint64 newEngine) {
         if (m_searchProvider == newEngine || newEngine >= m_registeredEngineURLs.length()) return;
         if(newEngine <0)return;
         m_searchProvider = newEngine;
         emit searchEngineChanged();
     }
+    Q_SIGNAL void searchEngineChanged( );
 
     Q_INVOKABLE qint64 registerEngine(const QString& url){
         // returns index of already-registered engine, if you accidentally register a duplicate one.
@@ -108,27 +111,28 @@ public:
             return m_registeredEngineURLs.length() -1;}
         else{return engineIDX;}
     }
-    Q_INVOKABLE QUrl getURL(const QString &userInput){
+    Q_INVOKABLE QUrl getURL(const QString& userInput){ // passing a null or empty string returns the base URL of the search engine
+        const QString tempstr = m_registeredEngineURLs[m_searchProvider];
+        if(userInput.isEmpty() || userInput.isNull()) return m_https + (tempstr.left(tempstr.indexOf("/")));
         QUrl returnURL;
         QFileInfo file(userInput);
         QRegularExpression _regex = QRegularExpression( R"((http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*))" );
-        if( _regex.match(userInput).hasMatch() == false ){ returnURL = m_https + m_registeredEngineURLs[m_searchProvider] + userInput;}
+        if( _regex.match(userInput).hasMatch() == false ){ returnURL = m_https + tempstr + userInput;}
         else if( file.exists() ){ returnURL = "file:///" + file.absoluteFilePath(); }
         else { returnURL = QUrl::fromUserInput(userInput);}
         return returnURL;
     }
-signals:
-    Q_INVOKABLE void searchEngineChanged( );
+// signals:
 private:
-    qint64 m_searchProvider = 3;
     const QString m_https = "https://";
-    // I could use a hashtable instead? How about I do?
-    QList<const QString> m_registeredEngineURLs{
+    QList <QString> m_registeredEngineURLs{
         "www.google.com/search?q=",
         "duckduckgo.com/?q=",
         "www.startpage.com/do/search?q=",
         "search.brave.com/search?q="
     };
+    qint64 m_searchProvider = 3;
+    // I could use a hashtable instead? How about I do?
 };
 
 
