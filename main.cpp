@@ -20,7 +20,6 @@ Otherwise, the prevalence of AI is kept to a minimal.
 #include <QWebEngineProfile>
 #include <QMetaObject>
 #include "utils.hpp"
-// #include <QAudioDecoder>
 
 //TODO:
 // create Border-Image derived QML type that uses QRect (Qt.Rect) for borders
@@ -33,13 +32,9 @@ Otherwise, the prevalence of AI is kept to a minimal.
 
 int main(int argc, char *argv[])
 {
-    // qputenv("QT_LOGGING_RULES", "qt.rhi.general=true;qt.scenegraph.general=true");
-    // Folders "translations" and "qmltooling" are not strictly necessary. in deployment
-    // Neither, are the DLLs for other QtQuickStyles other than Basic and the default one needed.
-    // The "\qml\QtQuick\Controls" folder contains files that may be safely removed. Modify the QMLdir to ensure stability.
-    // qputenv("QV4_FORCE_INTERPRETER", "1");
-    // qputenv("QSG_INFO", "1");
-    // qputenv("QSG_RHI_PREFER_SOFTWARE_RENDERER", "1");
+    // Folders "translations" and "qmltooling" are not strictly necessary in deployment.
+    // The "\qml\QtQuick\Controls" folder contains files that may be safely removed.
+    // consider enabling devtools (via remote debugging) on port 9222
 
     // qputenv("QSG_RENDER_LOOP", "basic");
     qputenv("QV4_JIT_CALL_THRESHOLD","1"); //Slower first-run, otherwise, helps ensure all functions are JIT-compiled.
@@ -73,13 +68,12 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_CompressTabletEvents);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 
-    // consider enabling devtools (via remote debugging) on port 9222
     if( Q_FileHelper::fileExists("flags.txt") ){
         // qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
         QByteArray* currentFlags = new QByteArray();
         currentFlags ->prepend(Q_FileHelper::readLines_String("flags.txt", -1, false, " --", true).trimmed().toLocal8Bit());
         // prepends file-based flags instead of overriding!
-        qputenv("QTWEBENGINE_CHROMIUM_FLAGS", *currentFlags); // FINALLY WORKS!
+        qputenv("QTWEBENGINE_CHROMIUM_FLAGS", *currentFlags);
         // You can now tweak chromium flags via a text file!!!!
         delete currentFlags;
     }
@@ -87,22 +81,23 @@ int main(int argc, char *argv[])
 
     QtWebEngineQuick::initialize();
     QGuiApplication app(argc, argv);
+    //Creating cache dirs...
     Q_FileHelper::mkFolder("webcache");
     Q_FileHelper::mkFolder("webstorage");
     Q_FileHelper::mkFolder("qmlcache");
-    //Creating cache dirs...
     QByteArray* path = new QByteArray(Q_FileHelper::getLocalResource("qmlcache").toString().toLocal8Bit());
     qputenv( "QML_DISK_CACHE_PATH", *path ); // Will need this sooner or later...
     qDebug()<< *path;
     delete path;
 
-    bool wipeHistoryOnClose = true;
+    bool wipeHistoryOnClose = true; // will expose an option to un-set this
+
     //WEBENGINEPROFILE SETTINGS:
     QWebEngineProfile::defaultProfile()->setCachePath( Q_FileHelper::getLocalResource("webcache", true).toString() );
     QWebEngineProfile::defaultProfile()->setPersistentStoragePath( Q_FileHelper::getLocalResource("webstorage", true).toString() );
     QWebEngineProfile::defaultProfile()->setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
     QWebEngineProfile::defaultProfile() ->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::AllowPersistentCookies);
-    QWebEngineProfile::defaultProfile() ->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::StoreOnDisk);
+    QWebEngineProfile::defaultProfile() ->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
     // We can always expose these settings to an INI file :)
 
     // QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
@@ -128,34 +123,20 @@ int main(int argc, char *argv[])
     // searchHelper.setSearchEngine( Q_Searcher::DuckDuckGo );
 
     QQmlApplicationEngine engine;
-    // engine.rootContext() ->setContextProperty( "urlHelper", &searchHelper ); // try to stop depending on this  ASAP!
     engine.loadFromModule( "App.Core", "Main" );
     if( engine.rootObjects().isEmpty() )return 1;
-    // QObject* webBoxOBJ = engine.rootObjects().constFirst() ->findChild<QObject*>("_WebBox");
-
-
-    // if(webBoxOBJ != nullptr){
-        QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](){
+\
+    QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](){
             qDebug() <<"caught download!";
         });
-    // }
-
-    // QWindow* wnd = new QWindow;
-    // wnd->setWidth(100);
-    // wnd->setHeight(200);
 
     QQuickWindow* wnd = qobject_cast<QQuickWindow*>(engine.rootObjects().constFirst());
     wnd->setFlags(Qt::Window | Qt::FramelessWindowHint);
-    // wnd->setObjectName("ROOTWIN");
     wnd->contentItem()->setSmooth(false);
     wnd->contentItem()->setAntialiasing(false);
-    // qDebug()<<"WIDTH: "<<wnd->contentItem()->width();
     wnd->setColor(QColor(80, 80, 80));
     wnd->setVisible(true);
 
-    // while(true){
-    //     _mm_pause();
-    // }
     QGuiApplication::exec( );
     // after exec:
     if(wipeHistoryOnClose == true)QWebEngineProfile::defaultProfile() -> clearAllVisitedLinks();

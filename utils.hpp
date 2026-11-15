@@ -131,7 +131,7 @@ private:
         "www.startpage.com/do/search?q=",
         "search.brave.com/search?q="
     };
-    qint64 m_searchProvider = 3;
+    qint64 m_searchProvider = 1;
     // I could use a hashtable instead? How about I do?
 };
 

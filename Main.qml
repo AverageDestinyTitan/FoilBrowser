@@ -32,14 +32,6 @@ Window{
   SearchEngineHelper{
   id: urlHelper;
   }
-
-  // BasicRectangle{
-  // // anchors.fill: parent;
-  //   width: 100; height: this.width;
-  //   z: 100;
-  // onMouseClicked: (buttons, pos) => console.log(buttons + pos);
-  // }
-
   property alias backColor : root.color; //Alias "backColor" for the Window's background color
   property int tabLimit: -1; // Great for testing and performance.
   // title: (currentView?.title ?? "Browser"); //qmllint disable missing-property
@@ -209,65 +201,13 @@ Window{
             colorization_R_control.spinbox.setValue(colorValues.colorization_R);
             colorization_G_control.spinbox.setValue(colorValues.colorization_G);
             colorization_B_control.spinbox.setValue(colorValues.colorization_B);
-
           }
+
         }
+
       }
-
     }
-
   } // ![ColorAdjustmentsLoader]
-
-  Loader{
-    id: tabSwitcherLDR;
-    active: false;
-    sourceComponent: Component{
-      PageLoaderPopup{
-        win:root;
-        id:switcher;
-        transientParent: root;
-        onClosing: tabSwitcherLDR.active = false;
-        destroyOnClose: false;
-        content:GridView{
-          id: tabGrid
-          parent: switcher.contentItem;
-          anchors.fill: parent;
-          anchors.topMargin: switcher.titleBar.height;
-          cellWidth: Math.floor(this.width / 5);
-          antialiasing: false;
-          cellHeight: cellWidth;
-          // model: webBox.count;
-          boundsBehavior: Flickable.StopAtBounds;
-          keyNavigationWraps: true;
-          onCurrentIndexChanged:()=>{ if(tabGrid.currentIndex >= tabGrid.count)tabGrid.currentIndex = 0; }
-          delegate: IconButton{
-            required property int index;
-            size: Qt.point(tabGrid.cellWidth, tabGrid.cellHeight);
-            iconsrc: webBox.children[index]?.icon;
-            hitbox.acceptedButtons: Qt.LeftButton | Qt.RightButton;
-            hitbox.onTapped:(eventPoint, button)=>{
-                              if(button === Qt.LeftButton){ console.log("switching!"); webBox.switchToIndex(index); }
-                              if(button === Qt.RightButton){ root.deleteTab(index);/* this.destroy();*/}
-                            }
-          }
-          Keys.onReturnPressed:()=>{webBox.switchToIndex(tabGrid.currentIndex);}
-          Keys.onTabPressed: ()=>{ tabGrid.currentIndex++;}
-          Keys.onEscapePressed:()=>{switcher.close();}
-        }
-
-      }
-    }
-  } // ![TabSwitcherLDR]
-
-
-  // Base Type: Popup
-  // Popup loads a Page, as a property. (property Page loadItem: null)
-  // The Page must contain buttons, or, a mean to make the Popup to contain a "result" value (Q_ENUM)
-  // Or, alternatively, emit a signal "ResultChosen" with the result. And, any other extra data... (e.g the reason the Popup was closed.)
-  // Consider passing the request to the "page" of the dialog, and letting the dialog mostly independently decide the fate of the request.
-  // For the most part, the WebEngine requests can indeed be tossed around and have an effect across the whole thing.
-
-  // You need a DownloadPage, and, PermissionPage
 
   TitleBar{
     win: root;
@@ -354,32 +294,6 @@ Window{
                            }
                          }
     }
-
-    // Rectangle{
-    //   id:generic_rect;
-    //   height:searchBar.height;
-    //   width: 150;
-    //   x: searchBar.x + searchBar.width;
-    //   y: searchBar.y;
-    //   gradient: Gradient{
-    //     orientation: Gradient.Horizontal;
-    //   GradientStop{position: 0.0; color:"#FF0000";}
-    //   GradientStop{position: 0.5; color: "#00FF00";}
-    //   GradientStop{position: 1.0; color: "#0000FF";}
-    //   }
-    // }
-
-    // BorderImage{
-    //   id: img;
-    //   height:searchBar.height;
-    //   width: 150;
-    //   x: searchBar.x + searchBar.width;
-    //   y: searchBar.y;
-    //   source: Q_FileHelper.getLocalResource("ASSETS/BORDERIMAGES/retro-pressed.png", true);
-    //   horizontalTileMode: BorderImage.Repeat; verticalTileMode: BorderImage.Repeat;
-    //   border.bottom: 5; border.top: 5; border.left: 5; border.right: 5;
-    // }
-
   } // ![TitleBar]
 
   Shortcut{
@@ -394,9 +308,9 @@ Window{
     }
   }
 
-  Shortcut{
-    sequence: "Ctrl+Tab";
-    onActivated: {tabSwitcherLDR.active ^=1}}
+  // Shortcut{
+  //   sequence: "Ctrl+Tab";
+  //   onActivated: {tabSwitcherLDR.active ^=1}}
   Shortcut{
     sequence: "Ctrl+T";
     onActivated: { webBox.createObject("webtab", true, {url: urlHelper.getURL("")});}}
@@ -473,8 +387,6 @@ Window{
     interval: 1000;
     window: root;
     // active: true;
-    // onFpsChanged: console.log(fpsTimer.fps);
-
   } // keeping this here in case...
 
   ImageSource{
@@ -498,18 +410,8 @@ Window{
   imgsrc: src;
   }
 
-  // QML_FPSCounter{
-  // id: qmlFPSTIMER;
-  // win: root;
-  // logFramerateToConsole: true;
-  // }
-
   Component.onCompleted: {
-    // console.log(src);
     root.requestActivate();
     // fpsTimer.start();
-    // qmlFPSTIMER.start();
-    // console.log(viewHandler.active);
-    // console.log(downloadHandler.active);
-  }
+    }
 } // ![WND]

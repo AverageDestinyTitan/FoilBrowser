@@ -5,7 +5,9 @@ Window{
       id: rootwin;
       required property Window win;
       contentItem{
-            smooth: false; }
+            smooth: false;
+            antialiasing: false;
+      }
       visible: true;
       width: 200; height: 200; // 200 x 200 or similar. preferrably.
       flags: Qt.SubWindow  | Qt.FramelessWindowHint;
