@@ -1,12 +1,12 @@
-// THIS PROJECT IS THE CREATION OF WHISKERDOTDEV
+// THIS PROJECT IS THE CREATION OF AVERAGETITANFROMDESTINY
 
 /*
-AI DISCLOSURE: The vast majority of code was written by humans (me) ;
+AI DISCLOSURE: The vast majority of code was written by humans (me)
 
 AI was used to research classes, types, and help me understand said objects across QML, C++ and CMake (CMakeLists) .
 AI was also used to help translate the QMake file this project used to use.
 
-Otherwise, the prevalence of AI is kept to a minimal.
+Though, as of now, AI is not being used for any purposes whatsoever.
 */
 
 #include <QGuiApplication>

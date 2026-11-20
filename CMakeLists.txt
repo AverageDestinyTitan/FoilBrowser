@@ -16,6 +16,7 @@ endif()
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
+    Widgets
     Quick
     Qml
     WebEngineQuick
@@ -63,6 +64,7 @@ qt_add_qml_module(FoilBrowser
     QtQuick
     QtCore
     QtQml
+    QtWidgets
 
     NO_GENERATE_AOT_VALIDATION
 )
@@ -71,6 +73,7 @@ add_subdirectory("QComponents" QComponentsproj)
 target_link_libraries( FoilBrowser PRIVATE
     Qt6::Core
     Qt6::Gui
+    Qt6::Widgets
     Qt6::Quick
     Qt6::Qml
     Qt6::WebEngineQuick
@@ -90,4 +93,3 @@ install(TARGETS FoilBrowser
     BUNDLE DESTINATION .
     RUNTIME DESTINATION ${INSTALL_BINDIR}
 )
-
