@@ -9,7 +9,7 @@ AI was also used to help translate the QMake file this project used to use.
 Though, as of now, AI is not being used for any purposes whatsoever.
 */
 
-#include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QtWebEngineQuick>
@@ -20,15 +20,7 @@ Though, as of now, AI is not being used for any purposes whatsoever.
 #include <QWebEngineProfile>
 #include <QMetaObject>
 #include "utils.hpp"
-
-//TODO:
-// create Border-Image derived QML type that uses QRect (Qt.Rect) for borders
-//Use framecount to derive the "features" present in the GIF
-// 1: normal
-// 2: pressed
-// 3: disabled
-// 4: selected -- Probably won't use
-// 5: hovered -- Probably won't use
+#include <QWidget>
 
 int main(int argc, char *argv[])
 {
@@ -39,26 +31,14 @@ int main(int argc, char *argv[])
     // qputenv("QSG_RENDER_LOOP", "basic");
     qputenv("QV4_JIT_CALL_THRESHOLD","1"); //Slower first-run, otherwise, helps ensure all functions are JIT-compiled.
     qputenv("QV4_CRASH_ON_STACKOVERFLOW", "1");
-    qputenv("QV4_JS_MAX_STACK_SIZE","4000"); //Higher Memory usage, but, better overall performance... NOT!
-    //Default stack size is 4 MB (4,000,000 Bytes)
-    qputenv("QV4_MAX_CALL_DEPTH","1"); // Why would we need to call a JS function recursively over 600 times?
+    qputenv("QV4_JS_MAX_STACK_SIZE","4000"); //Default stack size is 4 MB (4,000,000 Bytes)
+    qputenv("QV4_MAX_CALL_DEPTH","1"); // Recursion? nuh uh.
 
     QCoreApplication::setAttribute(Qt::AA_DisableShaderDiskCache);
     qputenv("QSG_RHI_DISABLE_SHADER_DISK_CACHE", "1"); //Really? We had to do the Attribute AND environment variable?
 
-    // QSurfaceFormat defFormat;
-    // defFormat.setSamples(-1);
-    // defFormat.setSwapInterval(0);
-    // defFormat.setSwapBehavior(QSurfaceFormat::SwapBehavior::SingleBuffer);
-    // QSurfaceFormat::setDefaultFormat(defFormat);
     QSurfaceFormat::defaultFormat().setSamples(-1);
     QSurfaceFormat::defaultFormat().setSwapInterval(0);
-    // QSurfaceFormat::defaultFormat().setSwapBehavior(QSurfaceFormat::SwapBehavior::SingleBuffer);
-    // QSurfaceFormat::defaultFormat().setColorSpace(QColorSpace::NamedColorSpace::Bt2100Pq);
-    // QSurfaceFormat::defaultFormat().setAlphaBufferSize(2);
-    // QSurfaceFormat::defaultFormat().setBlueBufferSize(10);
-    // QSurfaceFormat::defaultFormat().setGreenBufferSize(10);
-    // QSurfaceFormat::defaultFormat().setRedBufferSize(10);
 
     QQuickWindow::setTextRenderType(QQuickWindow::TextRenderType::NativeTextRendering);
 
@@ -80,7 +60,7 @@ int main(int argc, char *argv[])
 
 
     QtWebEngineQuick::initialize();
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
     //Creating cache dirs...
     Q_FileHelper::mkFolder("webcache");
     Q_FileHelper::mkFolder("webstorage");
@@ -98,11 +78,6 @@ int main(int argc, char *argv[])
     QWebEngineProfile::defaultProfile()->setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
     QWebEngineProfile::defaultProfile() ->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::AllowPersistentCookies);
     QWebEngineProfile::defaultProfile() ->setPersistentPermissionsPolicy(QWebEngineProfile::PersistentPermissionsPolicy::AskEveryTime);
-    // We can always expose these settings to an INI file :)
-
-    // QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested,
-    //                  [&](){qDebug() << "download requested!";}
-    //                  );
 
     int fontid = QFontDatabase::addApplicationFont(Q_FileHelper::getLocalResource("font/FONT_MAIN.ttf").toString() ); // consider custom fonts?
     if(fontid != -1){
@@ -119,16 +94,16 @@ int main(int argc, char *argv[])
 
     qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
 
-    // Q_Searcher searchHelper;
-    // searchHelper.setSearchEngine( Q_Searcher::DuckDuckGo );
-
     QQmlApplicationEngine engine;
     engine.loadFromModule( "App.Core", "Main" );
     if( engine.rootObjects().isEmpty() )return 1;
 \
     QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](){
-            qDebug() <<"caught download!";
-        });
+        QWidget* widg = new QWidget();
+        widg->setGeometry(QRect(200, 200, 200, 200));
+        widg->setWindowFlags(Qt::WindowType::Popup);
+        widg->show();
+    });
 
     QQuickWindow* wnd = qobject_cast<QQuickWindow*>(engine.rootObjects().constFirst());
     wnd->setFlags(Qt::Window | Qt::FramelessWindowHint);
@@ -136,10 +111,10 @@ int main(int argc, char *argv[])
     wnd->contentItem()->setAntialiasing(false);
     wnd->setColor(QColor(80, 80, 80));
     wnd->setVisible(true);
-
-    QGuiApplication::exec( );
+    int ret = 0;
+    ret = QApplication::exec( );
     // after exec:
     if(wipeHistoryOnClose == true)QWebEngineProfile::defaultProfile() -> clearAllVisitedLinks();
 
-    return 0;
+    return ret;
 }

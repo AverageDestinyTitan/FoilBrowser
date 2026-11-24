@@ -125,16 +125,16 @@ Window{
       }
 
       function onFullScreenRequested( request ){
-        request.accept();
+        request.accept(); // add states and state-handling later.
       }
 
       function onNewWindowRequested ( request ) {
         if(request.userInitiated === false){
           return;
-        }else if( request.destination === WebEngineNewWindowRequest.InNewTab ){ webBox.createObject( {url : request.requestedUrl},  ); }
-        // else if( request.destination === WebEngineNewWindowRequest.InNewBackgroundTab ){webBox.createTab(request.requestedUrl, false ); }
+        }else if( request.destination === WebEngineNewWindowRequest.InNewTab ){ webBox.createObject( "webtab", true, {url : request.requestedUrl} ); }
+        else if( request.destination === WebEngineNewWindowRequest.InNewBackgroundTab ){webBox.createObject("webtab", true, {url : request.requestedUrl}); }
       }
-      // function onCloseRequested() { root.deleteTab(); }
+      function onCloseRequested() { webBox.deleteTab(webBox.currentIndex); }
 
       // UI-related functions here:
       function onUrlChanged(){console.log("URL CHANGED!");searchBar.text = webBox.readPropertyCache("url", "NULL").toString(); }
