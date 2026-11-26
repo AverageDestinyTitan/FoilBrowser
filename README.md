@@ -4,12 +4,8 @@
 
 <img width="914" height="611" alt="A picture of the browser displaying a DuckDuckGo search page containing images from the Halo video game franchise" src="https://github.com/user-attachments/assets/55ecafea-e8e0-444e-a7c3-0f74bf739644" />
 
-<<<<<<< HEAD
 ###### ^This thing is highly experimental, hence the weird UI. 
 
-
-=======
->>>>>>> d3af46ad6eef3bae795a5cd6c4fb2b291bc1971f
 FoilBrowser is a web browser made with QML & C++. It is built atop QtWebEngine.
 
 ### FEATURES:
