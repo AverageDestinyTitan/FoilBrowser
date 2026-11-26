@@ -62,7 +62,7 @@ public:
 
     Q_INVOKABLE void rebuildPropertyCache(){
         this -> propertyCacheTable.clear();
-        for( QString item : defaultCacheItems ){
+        for( const QString item : defaultCacheItems ){
             QQmlProperty prop(getCurrentTab(), item);
             if( prop.isValid() == true )propertyCacheTable.insert(item, prop);
         }
@@ -82,9 +82,9 @@ public:
     }
 
     Q_INVOKABLE void deleteTab( qint64 idx){
-        if(idx <0 || idx >= childItems().size() ){return;}
+        if( (idx <0 || idx >= childItems().size()) || childItems().size() == 0){return;}
         childItems().at(idx)->deleteLater();
-        switchToIndex(m_currentIndex -1); // switches to previous tab. Maybe I should make a convenience function to jump between tab indexes?
+        switchToIndex(getCurrentIndex() -1); // switches to previous tab. Maybe I should make a convenience function to jump between tab indexes?
     }
 
     Q_INVOKABLE QQuickItem* getCurrentTab()const{
@@ -98,7 +98,7 @@ public:
             if(this -> childItems().at(i) != currentChild){ this ->childItems().at(i) -> setVisible(false); }
         }
         if(currentChild -> isVisible() == false)currentChild -> setVisible(true);
-        if( childItems().at(m_currentIndex) ->size() != this ->size() ) childItems().at(m_currentIndex)->setSize(this->size());
+        if( childItems().at(getCurrentIndex()) ->size() != this ->size() ) childItems().at(m_currentIndex)->setSize(this->size());
         if(currentChild ->hasActiveFocus() == false) currentChild ->forceActiveFocus();
     }
 

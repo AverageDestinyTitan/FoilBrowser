@@ -195,7 +195,6 @@ public:
         qint64 priv_line_count = 0;
         if(lineCount < 0){priv_line_count = LLONG_MAX;}
         else{priv_line_count = lineCount;}
-        qDebug()<< priv_line_count;
 
         if(lineCount == 0 ||  path_name.isEmpty() ) return ""; // No empty strings!
         if( fileToRead.open(QIODevice::ReadOnly | QIODevice::Text) ){
@@ -223,10 +222,6 @@ public:
         } // IF file opens
         if( fileToRead.isOpen() ) fileToRead.close();
         return out_str;
-    }
-
-    static bool fileExists(const QString &path){
-        return QFileInfo::exists(path);
     }
 
     //Consider adding tools to make files and paths...

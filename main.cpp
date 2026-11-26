@@ -21,12 +21,36 @@ Though, as of now, AI is not being used for any purposes whatsoever.
 #include <QMetaObject>
 #include "utils.hpp"
 #include <QWidget>
+#include "Windows.h"
+#include "cstdlib"
+#include <downloadWindow.hpp>
 
+// Folders "translations" and "qmltooling" are not strictly necessary in deployment.
+// The "\qml\QtQuick\Controls" folder contains files that may be safely removed.
+
+
+wchar_t* getRawRootPath(int& lastChar){
+    wchar_t* pathArr= new wchar_t[MAX_PATH];
+    int idx = 0;
+    GetModuleFileNameW(NULL, pathArr, MAX_PATH);
+    for(int i = 259; i >= 3; --i){
+        if(pathArr[i] != L'\\'){continue;}
+        else{idx = i;break;}
+    }
+    pathArr [idx + 1]= L'\0';
+    lastChar = idx+1;
+    qDebug()<<"IDX: "<<idx;
+    return pathArr;
+}
 int main(int argc, char *argv[])
 {
-    // Folders "translations" and "qmltooling" are not strictly necessary in deployment.
-    // The "\qml\QtQuick\Controls" folder contains files that may be safely removed.
-    // consider enabling devtools (via remote debugging) on port 9222
+    int lastIDX = 0;
+    wchar_t* dllpath = getRawRootPath(lastIDX);
+    wchar_t* lib_suffix = new wchar_t[4]{ L'L', L'I' , L'B', L'\0'};
+    memcpy(dllpath + lastIDX, lib_suffix, sizeof(dllpath));
+    AddDllDirectory(dllpath);
+    delete[] lib_suffix;
+    lib_suffix = nullptr;
 
     // qputenv("QSG_RENDER_LOOP", "basic");
     qputenv("QV4_JIT_CALL_THRESHOLD","1"); //Slower first-run, otherwise, helps ensure all functions are JIT-compiled.
@@ -36,20 +60,14 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setAttribute(Qt::AA_DisableShaderDiskCache);
     qputenv("QSG_RHI_DISABLE_SHADER_DISK_CACHE", "1"); //Really? We had to do the Attribute AND environment variable?
-
     QSurfaceFormat::defaultFormat().setSamples(-1);
     QSurfaceFormat::defaultFormat().setSwapInterval(0);
-
     QQuickWindow::setTextRenderType(QQuickWindow::TextRenderType::NativeTextRendering);
-
-    // QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
-    // QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     QCoreApplication::setAttribute(Qt::AA_CompressTabletEvents);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
 
-    if( Q_FileHelper::fileExists("flags.txt") ){
-        // qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
+    if( QFileInfo::exists("flags.txt") ){
         QByteArray* currentFlags = new QByteArray();
         currentFlags ->prepend(Q_FileHelper::readLines_String("flags.txt", -1, false, " --", true).trimmed().toLocal8Bit());
         // prepends file-based flags instead of overriding!
@@ -65,10 +83,7 @@ int main(int argc, char *argv[])
     Q_FileHelper::mkFolder("webcache");
     Q_FileHelper::mkFolder("webstorage");
     Q_FileHelper::mkFolder("qmlcache");
-    QByteArray* path = new QByteArray(Q_FileHelper::getLocalResource("qmlcache").toString().toLocal8Bit());
-    qputenv( "QML_DISK_CACHE_PATH", *path ); // Will need this sooner or later...
-    qDebug()<< *path;
-    delete path;
+    qputenv( "QML_DISK_CACHE_PATH", QByteArray(Q_FileHelper::getLocalResource("qmlcache").toString().toLocal8Bit())); // Will need this sooner or later...
 
     bool wipeHistoryOnClose = true; // will expose an option to un-set this
 
@@ -91,28 +106,25 @@ int main(int argc, char *argv[])
             app.setFont( globalFont );
         }
     }
-
     qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
+    qDebug()<< QString(dllpath);
+
 
     QQmlApplicationEngine engine;
     engine.loadFromModule( "App.Core", "Main" );
     if( engine.rootObjects().isEmpty() )return 1;
-\
-    QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](){
-        QWidget* widg = new QWidget();
-        widg->setGeometry(QRect(200, 200, 200, 200));
-        widg->setWindowFlags(Qt::WindowType::Popup);
-        widg->show();
-    });
 
     QQuickWindow* wnd = qobject_cast<QQuickWindow*>(engine.rootObjects().constFirst());
     wnd->setFlags(Qt::Window | Qt::FramelessWindowHint);
     wnd->contentItem()->setSmooth(false);
     wnd->contentItem()->setAntialiasing(false);
     wnd->setColor(QColor(80, 80, 80));
+    Q_DownloadWindow* widg =  new Q_DownloadWindow(nullptr);
+    QObject::connect(QWebEngineProfile::defaultProfile(), &QWebEngineProfile::downloadRequested, [&](QWebEngineDownloadRequest* req){
+        widg->showWithReq(wnd, req);
+    });
     wnd->setVisible(true);
-    int ret = 0;
-    ret = QApplication::exec( );
+    int ret = QApplication::exec( );
     // after exec:
     if(wipeHistoryOnClose == true)QWebEngineProfile::defaultProfile() -> clearAllVisitedLinks();
 

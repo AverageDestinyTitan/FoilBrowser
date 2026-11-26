@@ -58,7 +58,7 @@ qt_add_qml_module(FoilBrowser
     qquickstack.hpp
     simpleRect.hpp
     downloadWindow.hpp
-    downloadWidget.hpp
+
 
     DEPENDENCIES
     QComponentsproj
