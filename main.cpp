@@ -20,7 +20,6 @@ Though, as of now, AI is not being used for any purposes whatsoever.
 #include <QWebEngineProfile>
 #include <QMetaObject>
 #include "utils.hpp"
-#include <QWidget>
 #include "Windows.h"
 #include "cstdlib"
 #include <downloadWindow.hpp>
@@ -106,6 +105,7 @@ int main(int argc, char *argv[])
             app.setFont( globalFont );
         }
     }
+
     qDebug() << qgetenv("QTWEBENGINE_CHROMIUM_FLAGS");
     qDebug()<< QString(dllpath);
 

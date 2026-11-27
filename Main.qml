@@ -96,23 +96,10 @@ Window{
         colorizationColor: colorValues.colorization_color;
       }
     }
-
-    // function handleDownload(donwreq : WebEngineDownloadRequest) : void {
-    //   console.log( "Download triggered for:", donwreq.downloadFileName );
-    //   var dialog =
-    //       root.pageLoaderComponent.createObject(root,{win: root,
-    //                                               content: root.downloadPageComponent.createObject( null, { _req : donwreq} ) }
-    //                                             );
-    // }
-
-    // signal globalProfileDownloadRequested( WebEngineDownloadRequest download ); // QWebEngineDownloadRequest
-
-    // onGlobalProfileDownloadRequested: (download)=>webBox.handleDownload(download);
-
     Connections {
       id: m_viewHandler;
       target: webBox.currentTab;
-      // enabled: m_viewHandler.target !== null;
+      enabled: m_viewHandler.target !== null;
       // enabled: false;
       ignoreUnknownSignals: true;
       function onPermissionRequested ( permission ) {

@@ -42,7 +42,7 @@ set(QML_SRC_FILES
     Main.qml
     WebTab.qml
     PageLoaderPopup.qml
-    DownloadPage.qml
+
     WebDialog.qml
     PermissionPage.qml
     ColorAdjustmentPage.qml

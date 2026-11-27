@@ -17,6 +17,9 @@ public:
 
     Q_DownloadWindow(QWidget* parent = nullptr){
         this -> setWindowFlags(Qt::WindowStaysOnTopHint| Qt::Tool );
+        m_rejectButton.setFlat(true);
+        m_acceptButton.setFlat(true);
+        m_fileDialogOpener.setFlat(true);
         row1.addWidget(&m_filenameLabel, 0, Qt::AlignmentFlag::AlignLeft);
         row1.addWidget(&m_fileNameBox, 1, Qt::AlignmentFlag::AlignRight);
         row2.addWidget(&m_filePathLabel, 0, Qt::AlignmentFlag::AlignLeft);
@@ -27,8 +30,8 @@ public:
         stack.addLayout(&row1, 0);
         stack.addLayout(&row2, 0);
         stack.addLayout(&row3, 0);
+        m_fileDialogOpener.setFixedWidth(25);
 
-        m_acceptButton.setDefault(true);
         QObject::connect(&m_acceptButton, &QPushButton::clicked, this, [&](){ acceptDownload(); });
         QObject::connect(&m_rejectButton, &QPushButton::clicked, this, [&](){ rejectDownload(); });
         QObject::connect(&m_fileDialogOpener, &QPushButton::clicked, this, [&](){
@@ -37,7 +40,6 @@ public:
                                                   QDir::rootPath(), QFileDialog::ShowDirsOnly)
                 );
         });
-
     }
 
     void showWithReq(QWindow* wnd = nullptr, QWebEngineDownloadRequest* request = nullptr) {
@@ -47,6 +49,7 @@ public:
         m_fileNameBox.setText(m_requestPointer->suggestedFileName());
         m_filePathBox.setText(m_requestPointer->downloadDirectory());
         this ->setVisible(true);
+        this ->activateWindow();
     }
 protected:
     void keyReleaseEvent(QKeyEvent* event)override{
@@ -54,6 +57,14 @@ protected:
             rejectDownload();
             event->setAccepted(true);
         }
+        if(event->key() == Qt::Key::Key_Return){
+            acceptDownload();
+            event->setAccepted(true);
+        }
+    }
+    void closeEvent(QCloseEvent* event)override{
+        rejectDownload();
+        event->setAccepted(true);
     }
 
 private:
@@ -76,9 +87,9 @@ private:
     QVBoxLayout stack = QVBoxLayout(this);
 
     const QSize m_dialogSizeDefault = QSize (350, 200);
+    QPointer<QWebEngineDownloadRequest>m_requestPointer=nullptr;
     QLabel m_filenameLabel = QLabel("File name: ");
     QLabel m_filePathLabel = QLabel("File path: ");
-    QPointer<QWebEngineDownloadRequest>m_requestPointer=nullptr;
     QTextEdit m_fileNameBox = QTextEdit();
     QTextEdit m_filePathBox = QTextEdit();
 
